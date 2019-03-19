@@ -1,0 +1,9 @@
+{
+  "runtimes": {
+    "accelerator": {
+      "path": "/usr/bin/accelerator-container-runtime",
+      "runtimeArgs": []
+    }
+  },
+  "default-runtime": "accelerator"
+}

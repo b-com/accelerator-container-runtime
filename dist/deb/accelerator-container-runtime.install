@@ -1,0 +1,5 @@
+accelerator-container-runtime /usr/bin
+accelerator-container-runtime-hook /usr/bin
+accelerator-container-runtime-tool /usr/bin
+acceleration.json /etc
+daemon.json /etc/docker

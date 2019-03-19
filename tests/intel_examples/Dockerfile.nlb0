@@ -1,0 +1,9 @@
+FROM intel_fpga:latest
+
+# devices bdf or slot list with comma separator or "all" or "none" or ""
+ENV ACCELERATOR_DEVICES "06:00.0"
+
+ENV ACCELERATOR_FUNCTIONS "nlb0"
+
+ENTRYPOINT /usr/bin/hello_fpga
+

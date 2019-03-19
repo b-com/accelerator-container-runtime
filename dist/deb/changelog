@@ -1,0 +1,6 @@
+accelerator-container-runtime (1.0.0+@VERSION@) stretch; urgency=medium
+
+  * First version
+
+ -- b<>com <acceleration@b-com.com>  Wed, 07 Mar 2018 05:47:37 +0000
+

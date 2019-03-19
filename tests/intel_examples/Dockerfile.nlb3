@@ -1,0 +1,10 @@
+FROM intel_fpga:latest
+
+
+# devices bdf list with comma separator or "all" or "none" or ""
+ENV ACCELERATOR_DEVICES "06:00.0"
+
+ENV ACCELERATOR_FUNCTIONS "nlb3"
+
+ENTRYPOINT fpgadiag --mode=read --read-vc=vh0 --write-vc=vh0 --multi-cl=4 --begin=65532 --timeout-sec=5 --cont
+

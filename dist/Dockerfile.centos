@@ -1,0 +1,118 @@
+ARG VERSION_ID
+FROM centos:${VERSION_ID}
+
+RUN yum install -y \
+    ca-certificates \
+    wget \
+	git \
+	rpm-build \
+    gcc \
+    make \
+    json-c-devel \
+    gettext-devel \
+    openssl-devel \
+    perl-CPAN \
+    perl-devel \
+    zlib-devel \
+    curl-devel \
+    pkgconfig \
+    libseccomp-devel \
+    libselinux-devel && \
+    rm -rf /var/cache/yum/*
+
+ARG GOLANG_VERSION=0.0.0
+RUN set -eux; \
+    \
+    arch="$(uname -m)"; \
+    case "${arch##*-}" in \
+        x86_64 | amd64) ARCH='amd64' ;; \
+        *) echo "unsupported architecture"; exit 1 ;; \
+    esac; \
+    wget -nv -O - https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-${ARCH}.tar.gz \
+    | tar -C /usr/local -xz
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+# packaging
+ARG PKG_VERS
+ARG PKG_REV
+
+ENV VERSION $PKG_VERS
+ENV RELEASE $PKG_REV
+
+# output directory
+ENV DIST_DIR=/tmp/accelerator-container-runtime-$PKG_VERS/SOURCES
+RUN mkdir -p $DIST_DIR
+
+#--------------
+# runtime-tool
+#--------------
+
+#COPY opae/*.rpm /tmp/
+#RUN yum localinstall -y /tmp/opae*.rpm && rm /tmp/opae*.rpm
+
+COPY runtime-tool /tmp/runtime-tool
+
+RUN git clone https://github.com/aws/aws-fpga /tmp/aws-fpga
+
+RUN cd /tmp/runtime-tool && \
+    make CFLAGS="-I/tmp/aws-fpga/sdk/userspace/include" accelerator-container-runtime-tool && \
+	mv accelerator-container-runtime-tool $DIST_DIR/accelerator-container-runtime-tool
+
+#--------------
+# runtime-hook
+#--------------
+COPY runtime-hook/ $GOPATH/src/accelerator-container-runtime-hook
+
+RUN go get -ldflags "-s -w" -v accelerator-container-runtime-hook && \
+    mv $GOPATH/bin/accelerator-container-runtime-hook $DIST_DIR/accelerator-container-runtime-hook
+
+COPY conf/*.json $DIST_DIR/
+
+WORKDIR $DIST_DIR/..
+
+#--------------
+# patched runc
+#--------------
+
+# Install another git version
+RUN GIT_DOWNLOAD_SUM=e19d450648d6d100eb93abaa5d06ffbc778394fb502354b7026d73e9bcbc3160 && \
+    curl -fsSL https://www.kernel.org/pub/software/scm/git/git-2.13.2.tar.gz -O && \
+    echo "$GIT_DOWNLOAD_SUM  git-2.13.2.tar.gz" | sha256sum -c --strict - && \
+    tar --no-same-owner -xzf git-2.13.2.tar.gz -C /tmp && \
+    cd /tmp/git-2.13.2 && \
+    ./configure && make -j"$(nproc)" install
+
+RUN go get github.com/LK4D4/vndr
+
+# runc
+WORKDIR $GOPATH/src/github.com/opencontainers/runc
+
+RUN git clone https://github.com/docker/runc.git . && \
+    git fetch https://github.com/opencontainers/runc.git
+
+ARG RUNC_COMMIT
+COPY runtime-patch/runc/$RUNC_COMMIT/ /tmp/patches/runc
+
+RUN git checkout $RUNC_COMMIT && \
+    git apply /tmp/patches/runc/* && \
+    if [ -f vendor.conf ]; then vndr; fi && \
+    make BUILDTAGS="seccomp selinux" && \
+    mv runc $DIST_DIR/accelerator-container-runtime
+
+WORKDIR $DIST_DIR/..
+
+#--------------
+# rpm build
+#--------------
+
+COPY dist/rpm .
+
+CMD arch=$(uname -m) && \
+    rpmbuild --clean --target=$arch -bb \
+             -D "_topdir $PWD" \
+             -D "version $VERSION" \
+             -D "release $RELEASE" \
+             SPECS/accelerator-container-runtime.spec && \
+    mv RPMS/$arch/*.rpm /dist

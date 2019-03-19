@@ -1,0 +1,38 @@
+{
+  "global": {
+    "loglevel": "info"
+  },
+  "accelerationFunctions" : [
+    { "name": "nlb0",    "description": "Intel Loopback Adapter for hello_fpga" },
+    { "name": "nlb3",    "description": "Intel Loopback Adapter for fpga_diag" },
+    { "name": "nlb10",   "description": "Intel Loopback Adapter for hello_fpga modified" },
+    { "name": "sha512",  "description": "Compute one SHA 512" },
+    { "name": "sha512n", "description": "Compute several SHA 512" }
+  ],
+  "acceleratorEngines": [
+    {
+      "name": "IntelOPAE",
+      "bitstreamLocation": "/usr/lib/bitstream/intel",
+      "partialConfigPhysfn": true,
+      "partialConfigVirtfn": false,
+      "activateSriov": false,
+      "functions": [
+        { "name": "nlb0",    "hwID": "d8424dc4-a4a3-c413-f89e-433683f9040b", "hugepage2M": 3, "hugepage1G": 0, "bistreamFile": "nlb_mode_0.gbs" },
+        { "name": "nlb3",    "hwID": "f7df405c-bd7a-cf72-22f1-44b0b93acd18", "hugepage2M": 2, "hugepage1G": 2, "bistreamFile": "nlb_mode_3.gbs" },
+        { "name": "nlb10",   "hwID": "d8424dc4-a4a3-c413-f89e-433683f9040b", "hugepage2M": 3, "hugepage1G": 0, "bistreamFile": "nlb_mode_10.gbs" },
+        { "name": "sha512",  "hwID": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "hugepage2M": 6, "hugepage1G": 0, "bistreamFile": "sha512.gbs" }
+      ]
+    },
+    {
+      "name": "XilinxAWS",
+      "partialConfigPhysfn": true,
+      "partialConfigVirtfn": false,
+      "activateSriov": false,
+      "xilinxSdxRTE": "/opt/Xilinx/SDx/2017.1.rte.4ddr",
+      "functions": [
+        { "name": "sha512",  "hwID": "agfi-0b55312dafbf39918", "hugepage2M": 10 },
+        { "name": "sha512n", "hwID": "agfi-06188f05be121c440", "hugepage2M": 10 }
+      ]
+    }
+  ]
+}

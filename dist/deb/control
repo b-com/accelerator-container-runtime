@@ -1,0 +1,15 @@
+Source: accelerator-container-runtime
+Section: utils
+Priority: optional
+Maintainer: b<>com <acceleration@b-com.com>
+Standards-Version: 3.9.8
+Homepage: https://github.com/b-com/accelerator-container-runtime/wiki
+Vcs-Git: https://github.com/b-com/accelerator-container-runtime
+Vcs-Browser: https://github.com/b-com/accelerator-container-runtime
+Build-Depends: debhelper (>= 9)
+
+Package: accelerator-container-runtime
+Architecture: any
+Depends: libjson0
+Description: Accelerator container runtime
+ Provides a modified version of runc allowing users to run accelerator enabled containers.
