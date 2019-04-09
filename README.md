@@ -1,6 +1,8 @@
 # accelerator-container-runtime
 
-## Presentation
+Copyright 2019 b<>com
+
+## Presentation
 
 The accelerator-container-runtime plugin enables deployment of hardware accelerated applications into docker containers.
 
